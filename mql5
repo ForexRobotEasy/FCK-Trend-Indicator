@@ -1,0 +1,81 @@
+
+// FCK Trend Indicator - Trading Robot
+// Developer's Site: forexroboteasy.com
+// Development by: Forex Robot Easy Team
+
+#property strict
+
+// Define input parameters
+input int period = 14; // Period for calculating the indicator
+input double threshold = 0.5; // Threshold value for generating trading signals
+
+// Define global variables
+int trendDirection; // Variable to store the current trend direction
+
+// Define initialization function
+int OnInit()
+{
+    // Set indicator buffers
+    SetIndexBuffer(0, trendDirection);
+
+    // Set indicator label
+    ObjectCreate('FCK Indicator', OBJ_LABEL, 0, 0, 0);
+    ObjectSetText('FCK Indicator', 'FCK Trend Indicator', 12, 'Arial', Red);
+
+    return INIT_SUCCEEDED;
+}
+
+// Define deinitialization function
+void OnDeinit(const int reason)
+{
+    // Remove indicator label
+    ObjectDelete('FCK Indicator');
+}
+
+// Define start function
+void OnStart()
+{
+    // Get market data
+    int totalBars = Bars;
+    double[] closePrices;
+    ArraySetAsSeries(closePrices, true);
+    CopyClose(Symbol(), Period(), 0, totalBars, closePrices);
+
+    // Calculate indicator values
+    for (int i = period; i < totalBars; i++)
+    {
+        double sum = 0;
+        for (int j = 0; j < period; j++)
+        {
+            sum += closePrices[i - j];
+        }
+        double average = sum / period;
+
+        if (closePrices[i] > average + threshold)
+        {
+            trendDirection = 1; // Up trend
+        }
+        else if (closePrices[i] < average - threshold)
+        {
+            trendDirection = -1; // Down trend
+        }
+        else
+        {
+            trendDirection = 0; // No trend
+        }
+    }
+
+    // Display trading signals
+    if (trendDirection == 1)
+    {
+        Print('Buy signal'); // Generate buy signal
+    }
+    else if (trendDirection == -1)
+    {
+        Print('Sell signal'); // Generate sell signal
+    }
+    else
+    {
+        Print('No trading signal'); // No trading signal
+    }
+}
